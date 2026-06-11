@@ -1,0 +1,1430 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#071821" />
+  <title>Wodne wyzwanie</title>
+
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap");
+
+    :root {
+      --bg: #071821;
+      --ink: #eaffff;
+      --muted: rgba(234, 255, 255, 0.68);
+      --soft: rgba(234, 255, 255, 0.42);
+      --panel: rgba(13, 34, 45, 0.72);
+      --panel-2: rgba(234, 255, 255, 0.075);
+      --line: rgba(175, 245, 255, 0.16);
+      --line-strong: rgba(175, 245, 255, 0.28);
+      --shadow: rgba(0, 0, 0, 0.30);
+      --cyan: #67e8f9;
+      --blue: #38bdf8;
+      --deep: #0ea5e9;
+      --lime: #c8ff7a;
+      --pink: #ff7ab6;
+      --danger: #ff8d7a;
+      --success: #8dffcf;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      min-height: 100svh;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      overflow-x: hidden;
+      text-rendering: optimizeLegibility;
+    }
+
+    body.drawer-open {
+      overflow: hidden;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .background {
+      position: fixed;
+      inset: 0;
+      z-index: -4;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 13% 12%, rgba(103, 232, 249, 0.22), transparent 28rem),
+        radial-gradient(circle at 82% 18%, rgba(200, 255, 122, 0.12), transparent 30rem),
+        radial-gradient(circle at 72% 86%, rgba(255, 122, 182, 0.10), transparent 32rem),
+        linear-gradient(135deg, #071821 0%, #092432 48%, #061117 100%);
+    }
+
+    .background::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.35;
+      background-image:
+        linear-gradient(rgba(175, 245, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(175, 245, 255, 0.08) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: radial-gradient(circle at center, #000 0 38%, transparent 76%);
+    }
+
+    .background::after {
+      content: "";
+      position: absolute;
+      width: 72vmin;
+      height: 72vmin;
+      left: 50%;
+      top: 44%;
+      border-radius: 36% 64% 58% 42%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, rgba(103, 232, 249, 0.09), rgba(14, 165, 233, 0.02));
+      border: 1px solid rgba(175, 245, 255, 0.10);
+      animation: slowMorph 16s ease-in-out infinite;
+    }
+
+    @keyframes slowMorph {
+      0%, 100% {
+        border-radius: 36% 64% 58% 42%;
+        transform: translate(-50%, -50%) rotate(0deg);
+      }
+      50% {
+        border-radius: 58% 42% 37% 63%;
+        transform: translate(-50%, -50%) rotate(8deg);
+      }
+    }
+
+    .page {
+      min-height: 100svh;
+      width: 100%;
+      padding: max(22px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(22px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 520ms ease, transform 520ms ease;
+    }
+
+    body.is-ready .page {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .loader {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(7, 24, 33, 0.35);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: opacity 420ms ease, visibility 420ms ease;
+    }
+
+    body.is-ready .loader {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .loader-card {
+      display: inline-flex;
+      align-items: center;
+      gap: 13px;
+      padding: 14px 18px;
+      border: 1px solid var(--line-strong);
+      border-radius: 18px;
+      color: var(--ink);
+      background: rgba(13, 34, 45, 0.78);
+      box-shadow: 0 22px 60px var(--shadow);
+      font-family: "Space Grotesk", Inter, sans-serif;
+      font-weight: 700;
+    }
+
+    .loader-drop {
+      display: inline-block;
+      animation: loaderDrop 920ms ease-in-out infinite;
+    }
+
+    @keyframes loaderDrop {
+      0%, 100% { transform: translateY(-2px) scale(1); }
+      50% { transform: translateY(5px) scale(1.16); }
+    }
+
+    .wrap {
+      width: min(1240px, 100%);
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(13, 34, 45, 0.54);
+      box-shadow: 0 18px 50px rgba(0,0,0,.18);
+      backdrop-filter: blur(18px) saturate(1.08);
+      -webkit-backdrop-filter: blur(18px) saturate(1.08);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      font-family: "Space Grotesk", Inter, sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      color: #061117;
+      background: linear-gradient(135deg, var(--cyan), var(--lime));
+      box-shadow: 0 10px 28px rgba(103, 232, 249, .18);
+    }
+
+    .topbar-note {
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: clamp(16px, 4vw, 32px);
+      align-items: end;
+      padding: clamp(24px, 5vw, 48px);
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      background:
+        linear-gradient(135deg, rgba(234,255,255,.10), rgba(234,255,255,.035)),
+        rgba(13, 34, 45, 0.58);
+      box-shadow: 0 24px 90px var(--shadow);
+      backdrop-filter: blur(22px) saturate(1.10);
+      -webkit-backdrop-filter: blur(22px) saturate(1.10);
+      overflow: hidden;
+      position: relative;
+      isolation: isolate;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -12rem;
+      top: -16rem;
+      width: 34rem;
+      height: 34rem;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(103,232,249,.16), transparent 68%);
+      z-index: -1;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--cyan);
+      font-size: .82rem;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 12ch;
+      margin: 0;
+      font-family: "Space Grotesk", Inter, sans-serif;
+      font-size: clamp(3rem, 8vw, 6.5rem);
+      font-weight: 700;
+      line-height: .9;
+      letter-spacing: -0.075em;
+      text-wrap: balance;
+    }
+
+    .subtitle {
+      max-width: 66ch;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 2vw, 1.15rem);
+      line-height: 1.65;
+    }
+
+    .hero-actions {
+      display: grid;
+      gap: 10px;
+      min-width: min(320px, 100%);
+    }
+
+    .primary-button,
+    .ghost-button,
+    .amount-button,
+    .tab-button {
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform 160ms ease, filter 160ms ease, opacity 160ms ease, background 160ms ease, border-color 160ms ease;
+    }
+
+    .primary-button {
+      padding: 14px 20px;
+      border-radius: 16px;
+      color: #061117;
+      background: linear-gradient(135deg, var(--cyan), var(--lime));
+      box-shadow: 0 16px 34px rgba(103,232,249,.18);
+    }
+
+    .topbar-button {
+      min-width: 0;
+      padding: 10px 15px;
+      border-radius: 14px;
+      font-size: 0.92rem;
+      box-shadow: 0 10px 24px rgba(103,232,249,.14);
+    }
+
+    .ghost-button {
+      padding: 12px 16px;
+      border-radius: 16px;
+      color: var(--cyan);
+      background: rgba(234,255,255,.07);
+      border-color: var(--line);
+    }
+
+    .primary-button:hover,
+    .ghost-button:hover,
+    .amount-button:hover,
+    .tab-button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+    }
+
+    .primary-button:disabled,
+    .ghost-button:disabled {
+      cursor: wait;
+      opacity: .68;
+      transform: none;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(340px, .75fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background:
+        linear-gradient(135deg, rgba(234,255,255,.085), rgba(234,255,255,.035)),
+        rgba(13, 34, 45, 0.58);
+      box-shadow: 0 18px 60px rgba(0,0,0,.20);
+      backdrop-filter: blur(20px) saturate(1.08);
+      -webkit-backdrop-filter: blur(20px) saturate(1.08);
+      overflow: hidden;
+    }
+
+    .water-panel,
+    .leaderboard-panel,
+    .calendar-panel {
+      padding: clamp(18px, 3vw, 28px);
+    }
+
+    .section-title-row {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-family: "Space Grotesk", Inter, sans-serif;
+      color: var(--ink);
+      font-size: clamp(1.35rem, 3vw, 2.1rem);
+      font-weight: 700;
+      letter-spacing: -0.045em;
+    }
+
+    .section-note {
+      margin: 5px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .water-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 14px;
+    }
+
+    .person-card {
+      position: relative;
+      min-height: 330px;
+      padding: 16px;
+      border: 1px solid rgba(175, 245, 255, 0.14);
+      border-radius: 22px;
+      background: rgba(234, 255, 255, 0.055);
+      overflow: hidden;
+    }
+
+    .person-card.is-splashing {
+      animation: cardSplash 650ms ease;
+    }
+
+    @keyframes cardSplash {
+      0% { transform: translateY(0); }
+      35% { transform: translateY(-4px); }
+      100% { transform: translateY(0); }
+    }
+
+    .person-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .person-name {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Space Grotesk", Inter, sans-serif;
+      font-size: 1.12rem;
+      font-weight: 700;
+      line-height: 1.22;
+    }
+
+    .person-total {
+      color: var(--cyan);
+      font-size: .94rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .tube {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      height: 238px;
+      border: 1px solid rgba(175, 245, 255, 0.18);
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(234,255,255,.10), rgba(234,255,255,.035)),
+        rgba(6, 17, 23, .24);
+      overflow: hidden;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        inset 0 -18px 36px rgba(8, 118, 189, .10);
+      clip-path: polygon(10% 0, 90% 0, 100% 9%, 100% 100%, 0 100%, 0 9%);
+    }
+
+    .water {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: var(--level, 0%);
+      min-height: 7px;
+      background:
+        linear-gradient(180deg, rgba(117, 226, 255, 0.96), rgba(18, 139, 218, 0.94));
+      transition: height 900ms cubic-bezier(.2,.8,.2,1);
+    }
+
+    .water::before,
+    .water::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -18px;
+      width: 190%;
+      height: 42px;
+      border-radius: 48%;
+      background: rgba(255,255,255,.32);
+      transform: translateX(-50%);
+      animation: wave 4.2s ease-in-out infinite;
+    }
+
+    .water::after {
+      top: -13px;
+      opacity: .38;
+      animation-duration: 5.4s;
+      animation-delay: -1.8s;
+    }
+
+    @keyframes wave {
+      0%, 100% { transform: translateX(-50%) translateY(0) rotate(0deg); }
+      50% { transform: translateX(-50%) translateY(4px) rotate(3deg); }
+    }
+
+    .tube-lines {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg, transparent 0 19%, rgba(234,255,255,.08) 19% 20%, transparent 20% 39%, rgba(234,255,255,.08) 39% 40%, transparent 40% 59%, rgba(234,255,255,.08) 59% 60%, transparent 60% 79%, rgba(234,255,255,.08) 79% 80%, transparent 80%);
+    }
+
+    .goal-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(100% - min(100%, var(--goal-level, 100%)));
+      border-top: 1px dashed rgba(234,255,255,.36);
+      z-index: 3;
+    }
+
+    .goal-line::after {
+      content: "3 l";
+      position: absolute;
+      right: 9px;
+      top: -22px;
+      color: rgba(234,255,255,.56);
+      font-size: .72rem;
+      font-weight: 900;
+    }
+
+    .bubbles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 3;
+    }
+
+    .bubble {
+      position: absolute;
+      bottom: -24px;
+      width: var(--size);
+      height: var(--size);
+      left: var(--left);
+      border-radius: 999px;
+      background: rgba(255,255,255,.48);
+      animation: bubbleRise var(--duration) linear var(--delay) infinite;
+    }
+
+    @keyframes bubbleRise {
+      0% { transform: translateY(0) scale(.72); opacity: 0; }
+      16% { opacity: .9; }
+      100% { transform: translateY(-245px) scale(1.05); opacity: 0; }
+    }
+
+    .side {
+      display: grid;
+      gap: 18px;
+    }
+
+    .leader-tabs {
+      display: inline-flex;
+      padding: 4px;
+      gap: 4px;
+      border-radius: 16px;
+      background: rgba(234,255,255,.07);
+      border: 1px solid var(--line);
+      margin-bottom: 12px;
+    }
+
+    .tab-button {
+      border-radius: 12px;
+      padding: 8px 12px;
+      color: var(--muted);
+      background: transparent;
+    }
+
+    .tab-button.is-active {
+      color: #061117;
+      background: linear-gradient(135deg, var(--cyan), var(--lime));
+    }
+
+    .leaderboard {
+      display: grid;
+      gap: 8px;
+    }
+
+    .leader-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(234,255,255,.055);
+    }
+
+    .rank {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      color: #061117;
+      background: var(--cyan);
+      font-size: .82rem;
+      font-weight: 900;
+    }
+
+    .leader-name {
+      margin: 0;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .leader-total {
+      color: var(--cyan);
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .winner-calendar {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .winner-day,
+    .winner-weekday {
+      min-height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      font-size: .78rem;
+    }
+
+    .winner-weekday {
+      color: var(--soft);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .winner-day {
+      color: var(--muted);
+      background: rgba(234,255,255,.045);
+      border: 1px solid rgba(234,255,255,.06);
+      position: relative;
+    }
+
+    .winner-day.has-winner {
+      color: #061117;
+      background: linear-gradient(135deg, var(--cyan), var(--lime));
+      border-color: rgba(234,255,255,.22);
+      font-weight: 900;
+    }
+
+    .winner-day.has-winner::after {
+      content: "👑";
+      position: absolute;
+      right: 3px;
+      bottom: 2px;
+      font-size: .68rem;
+    }
+
+    .winner-caption {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.45;
+    }
+
+    .empty-state {
+      padding: 16px;
+      border: 1px dashed var(--line);
+      border-radius: 18px;
+      color: var(--muted);
+      line-height: 1.55;
+      background: rgba(234,255,255,.05);
+      text-align: center;
+    }
+
+    .empty-title {
+      margin: 0;
+      color: var(--ink);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .empty-subtitle {
+      margin: 6px auto 0;
+      max-width: 38ch;
+      line-height: 1.5;
+    }
+
+    .drawer {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: none;
+    }
+
+    .drawer.is-open {
+      display: block;
+    }
+
+    .drawer-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.38);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    .drawer-panel {
+      position: absolute;
+      right: max(16px, env(safe-area-inset-right));
+      top: max(16px, env(safe-area-inset-top));
+      bottom: max(16px, env(safe-area-inset-bottom));
+      width: min(430px, calc(100vw - 32px));
+      padding: 20px;
+      border: 1px solid var(--line-strong);
+      border-radius: 26px;
+      background:
+        linear-gradient(135deg, rgba(234,255,255,.12), rgba(234,255,255,.055)),
+        rgba(9, 28, 38, .92);
+      box-shadow: 0 24px 90px rgba(0,0,0,.34);
+      backdrop-filter: blur(22px) saturate(1.12);
+      -webkit-backdrop-filter: blur(22px) saturate(1.12);
+      overflow: auto;
+      transform: translateX(20px);
+      opacity: 0;
+      transition: transform 220ms ease, opacity 220ms ease;
+    }
+
+    .drawer.is-open .drawer-panel {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .drawer-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .drawer-title {
+      margin: 0;
+      font-family: "Space Grotesk", Inter, sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: -0.04em;
+    }
+
+    .drawer-subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .close-button {
+      width: 40px;
+      height: 40px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      color: var(--ink);
+      background: rgba(234,255,255,.07);
+      cursor: pointer;
+      font-size: 1.3rem;
+      line-height: 1;
+    }
+
+    .water-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field label {
+      color: rgba(234,255,255,.78);
+      font-size: .82rem;
+      font-weight: 900;
+      letter-spacing: .055em;
+      text-transform: uppercase;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      outline: none;
+      padding: 12px 13px;
+      color: var(--ink);
+      background: rgba(234,255,255,.08);
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      border-color: rgba(103,232,249,.42);
+      box-shadow: 0 0 0 4px rgba(103,232,249,.10);
+    }
+
+    .field textarea {
+      min-height: 82px;
+      resize: vertical;
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: rgba(234,255,255,.36);
+    }
+
+    .amounts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .amount-button {
+      padding: 10px 9px;
+      border-radius: 14px;
+      color: var(--cyan);
+      background: rgba(234,255,255,.07);
+      border-color: var(--line);
+    }
+
+    .amount-button.is-selected {
+      color: #061117;
+      background: linear-gradient(135deg, var(--cyan), var(--lime));
+    }
+
+    .remember-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .is-hidden-field {
+      display: none !important;
+    }
+
+    .form-message {
+      min-height: 1.45em;
+      margin: 0;
+      font-size: .94rem;
+      line-height: 1.45;
+    }
+
+    .form-message.success { color: var(--success); }
+    .form-message.error { color: var(--danger); }
+
+    .splash-drop {
+      position: fixed;
+      left: var(--x);
+      top: var(--y);
+      width: var(--size);
+      height: var(--size);
+      z-index: 80;
+      border-radius: 999px 999px 999px 20%;
+      background: linear-gradient(180deg, #a5f3fc, #0ea5e9);
+      pointer-events: none;
+      transform: rotate(45deg);
+      animation: splashDrop 900ms ease-out forwards;
+    }
+
+    @keyframes splashDrop {
+      0% { transform: translate(-50%, -50%) rotate(45deg) scale(1); opacity: 1; }
+      100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(45deg) scale(.2); opacity: 0; }
+    }
+
+    @media (max-width: 980px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-actions {
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        min-height: 100dvh;
+        align-items: start;
+      }
+
+      .drawer {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      .drawer.is-open {
+        display: flex;
+      }
+
+      .drawer-panel {
+        position: relative;
+        inset: auto;
+        width: min(430px, 100%);
+        max-height: calc(100dvh - 32px);
+        transform: translateY(18px) scale(.98);
+      }
+
+      .drawer.is-open .drawer-panel {
+        transform: translateY(0) scale(1);
+      }
+
+      .amounts {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .page,
+      .loader-drop,
+      .bubble,
+      .water,
+      .primary-button,
+      .ghost-button,
+      .amount-button,
+      .drawer-panel {
+        transition: none;
+        animation: none;
+      }
+    }
+  </style>
+</head>
+
+<body class="is-loading">
+  <div class="background" aria-hidden="true"></div>
+
+  <div class="loader" aria-live="polite" aria-label="Ładowanie strony">
+    <div class="loader-card"><span class="loader-drop">💧</span><span>Sprawdzamy poziom nawodnienia...</span></div>
+  </div>
+
+  <main class="page">
+    <div class="wrap">
+      <section class="topbar" aria-label="Nagłówek strony">
+        <div class="brand">
+          <span class="brand-mark">H₂O</span>
+          <span>Hydroboard</span>
+        </div>
+        <button class="primary-button topbar-button" type="button" id="openDrawerButton">Dolej wodę</button>
+      </section>
+
+      <section class="main-grid">
+        <section class="panel water-panel" aria-label="Dzisiejszy poziom wody">
+          <div class="section-title-row">
+            <div>
+              <h2 class="section-title">Dzisiejsze kolby</h2>
+              <p class="section-note">Maksymalny poziom kolby to 3 litry. Po przekroczeniu celu woda zostaje na pełnym poziomie.</p>
+            </div>
+          </div>
+          <div class="water-grid" id="waterGrid"></div>
+        </section>
+
+        <aside class="side">
+          <section class="panel leaderboard-panel" aria-label="Tabela rekordów">
+            <h2 class="section-title">Tabela rekordów</h2>
+            <div class="leader-tabs" role="tablist" aria-label="Zakres tabeli rekordów">
+              <button class="tab-button is-active" type="button" data-board="month">Miesiąc</button>
+              <button class="tab-button" type="button" data-board="alltime">Cały czas</button>
+            </div>
+            <div class="leaderboard" id="leaderboard"><div class="empty-state"><p class="empty-title">Brak rekordów</p><p class="empty-subtitle">Po zatwierdzeniu pierwszych wpisów pojawi się ranking.</p></div></div>
+          </section>
+
+          <section class="panel calendar-panel" aria-label="Kalendarz zwycięzców">
+            <h2 class="section-title">Kalendarz zwycięzców</h2>
+            <div class="winner-calendar" id="winnerCalendar"></div>
+            <p class="winner-caption" id="winnerCaption">Zwycięzca dnia pojawi się po zatwierdzeniu wyników.</p>
+          </section>
+        </aside>
+      </section>
+    </div>
+  </main>
+
+  <aside class="drawer" id="waterDrawer" aria-hidden="true">
+    <div class="drawer-backdrop" data-close-drawer></div>
+    <section class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+      <div class="drawer-header">
+        <div>
+          <h2 class="drawer-title" id="drawerTitle">Dolej wodę</h2>
+          
+        </div>
+        <button class="close-button" type="button" aria-label="Zamknij" data-close-drawer>×</button>
+      </div>
+
+      <form class="water-form" id="waterForm">
+        <div class="field">
+          <label for="userKey">Twój klucz</label>
+          <input id="userKey" name="user_key" type="password" maxlength="120" autocomplete="off" placeholder="np. niebieska-kropla-42" required />
+        </div>
+
+        <div class="field">
+          <label>Ile dolewamy?</label>
+          <div class="amounts" id="amountButtons">
+            <button class="amount-button is-selected" type="button" data-amount="250">250 ml</button>
+            <button class="amount-button" type="button" data-amount="330">330 ml</button>
+            <button class="amount-button" type="button" data-amount="500">500 ml</button>
+            <button class="amount-button" type="button" data-amount="750">750 ml</button>
+            <button class="amount-button" type="button" data-amount="1000">1 l</button>
+            <button class="amount-button" type="button" data-amount="1500">1,5 l</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="customAmount">Inna ilość, ml</label>
+          <input id="customAmount" name="custom_amount" type="number" min="50" max="3000" step="10" placeholder="opcjonalnie" />
+        </div>
+
+        <div class="field is-hidden-field" aria-hidden="true">
+          <label for="note">Notatka</label>
+          <textarea id="note" name="note" maxlength="300" tabindex="-1"></textarea>
+        </div>
+
+        <label class="remember-row is-hidden-field" aria-hidden="true">
+          <input id="rememberKey" type="checkbox" checked tabindex="-1" />
+          Zapamiętaj klucz na tym urządzeniu
+        </label>
+
+        <button class="primary-button" id="submitButton" type="submit">Dolej do kolby</button>
+        <p class="form-message" id="formMessage" aria-live="polite"></p>
+      </form>
+    </section>
+  </aside>
+
+  <script>
+    const SUPABASE_URL = "https://vgtbmaftvvbludobmpsk.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_WsLuKgPX4P9L-9N61Y7wNw_nyXm8Iw7";
+
+    const ENDPOINTS = {
+      today: `${SUPABASE_URL}/rest/v1/hydration_today_scores`,
+      month: `${SUPABASE_URL}/rest/v1/hydration_month_leaderboard`,
+      alltime: `${SUPABASE_URL}/rest/v1/hydration_alltime_leaderboard`,
+      winners: `${SUPABASE_URL}/rest/v1/hydration_daily_winners`,
+      add: `${SUPABASE_URL}/rest/v1/rpc/add_water_by_key`
+    };
+
+    const apiHeaders = {
+      apikey: SUPABASE_KEY,
+      "Content-Type": "application/json"
+    };
+
+    const elements = {
+      waterGrid: document.getElementById("waterGrid"),
+      waterForm: document.getElementById("waterForm"),
+      userKey: document.getElementById("userKey"),
+      note: document.getElementById("note"),
+      customAmount: document.getElementById("customAmount"),
+      amountButtons: document.getElementById("amountButtons"),
+      rememberKey: document.getElementById("rememberKey"),
+      submitButton: document.getElementById("submitButton"),
+      formMessage: document.getElementById("formMessage"),
+      leaderboard: document.getElementById("leaderboard"),
+      winnerCalendar: document.getElementById("winnerCalendar"),
+      winnerCaption: document.getElementById("winnerCaption"),
+      openDrawerButton: document.getElementById("openDrawerButton"),
+      refreshButton: document.getElementById("refreshButton"),
+      waterDrawer: document.getElementById("waterDrawer")
+    };
+
+    let selectedAmount = 250;
+    let boardMode = "month";
+    let todayScores = [];
+    let monthBoard = [];
+    let alltimeBoard = [];
+    let winners = [];
+    let lastAddedName = "";
+
+    function setCookie(name, value, days) {
+      const maxAge = days * 24 * 60 * 60;
+      document.cookie = `${name}=${encodeURIComponent(value)}; max-age=${maxAge}; path=/; SameSite=Lax`;
+    }
+
+    function getCookie(name) {
+      const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+      return match ? decodeURIComponent(match[1]) : "";
+    }
+
+    function loadSavedKey() {
+      const saved = localStorage.getItem("hydrationUserKey") || getCookie("hydrationUserKey");
+      if (saved) {
+        elements.userKey.value = saved;
+      }
+    }
+
+    function saveKeyIfNeeded() {
+      if (!elements.rememberKey.checked) return;
+      const key = elements.userKey.value.trim();
+      if (!key) return;
+
+      localStorage.setItem("hydrationUserKey", key);
+      setCookie("hydrationUserKey", key, 365);
+    }
+
+    function formatLiters(value) {
+      const liters = value / 1000;
+      return liters >= 10
+        ? `${liters.toFixed(0)} l`
+        : `${liters.toFixed(2).replace(".", ",")} l`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function fetchJson(url) {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: apiHeaders
+      });
+
+      if (!response.ok) {
+        throw new Error(`Supabase error: ${response.status}`);
+      }
+
+      return response.json();
+    }
+
+    function createBubbles() {
+      return Array.from({ length: 10 }, () => {
+        const left = 12 + Math.random() * 76;
+        const size = 5 + Math.random() * 10;
+        const duration = 4.8 + Math.random() * 4.2;
+        const delay = -Math.random() * duration;
+
+        return `<span class="bubble" style="--left:${left}%; --size:${size}px; --duration:${duration}s; --delay:${delay}s;"></span>`;
+      }).join("");
+    }
+
+    function renderTodayScores() {
+      if (!todayScores.length) {
+        elements.waterGrid.innerHTML = `
+          <div class="empty-state">
+            <p class="empty-title">Jeszcze nikt nie ma kolby</p>
+            <p class="empty-subtitle">Dodaj uczestników w Supabase, a potem zatwierdzaj zgłoszenia wody.</p>
+          </div>
+        `;
+        return;
+      }
+
+      elements.waterGrid.innerHTML = todayScores.map((person) => {
+        const total = Number(person.total_ml || 0);
+        const goal = Number(person.goal_ml || 3000);
+        const level = Math.max(3, Math.min(100, (total / 3000) * 100));
+        const goalLevel = Math.max(0, Math.min(100, (goal / 3000) * 100));
+        const isSplashing = lastAddedName && lastAddedName === person.display_name;
+
+        return `
+          <article class="person-card ${isSplashing ? "is-splashing" : ""}" data-name="${escapeHtml(person.display_name)}">
+            <div class="person-top">
+              <p class="person-name">${escapeHtml(person.display_name)}</p>
+              <span class="person-total">${formatLiters(total)}</span>
+            </div>
+            <div class="tube" aria-label="${escapeHtml(person.display_name)}: ${total} ml">
+              <div class="water" style="--level:${level}%"></div>
+              <div class="goal-line" style="--goal-level:${goalLevel}%"></div>
+              <div class="tube-lines"></div>
+              <div class="bubbles">${createBubbles()}</div>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      if (lastAddedName) {
+        setTimeout(() => {
+          lastAddedName = "";
+          document.querySelectorAll(".person-card.is-splashing").forEach((card) => card.classList.remove("is-splashing"));
+        }, 900);
+      }
+    }
+
+    function renderLeaderboard() {
+      const data = boardMode === "month" ? monthBoard : alltimeBoard;
+
+      if (!data.length) {
+        elements.leaderboard.innerHTML = `
+          <div class="empty-state">
+            <p class="empty-title">Brak rekordów</p>
+            <p class="empty-subtitle">Po zatwierdzeniu pierwszych wpisów pojawi się ranking.</p>
+          </div>
+        `;
+        return;
+      }
+
+      elements.leaderboard.innerHTML = data.slice(0, 8).map((row, index) => `
+        <div class="leader-row">
+          <span class="rank">${index + 1}</span>
+          <p class="leader-name">${escapeHtml(row.display_name)}</p>
+          <span class="leader-total">${formatLiters(Number(row.total_ml || 0))}</span>
+        </div>
+      `).join("");
+    }
+
+    function dateKey(date) {
+      return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    }
+
+    function renderWinnerCalendar() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const first = new Date(year, month, 1);
+      const firstWeekday = (first.getDay() + 6) % 7;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const previousMonthDays = new Date(year, month, 0).getDate();
+
+      const winnersMap = new Map();
+      for (const winner of winners) {
+        const date = new Date(`${winner.record_date}T00:00:00`);
+        winnersMap.set(dateKey(date), winner);
+      }
+
+      const weekdays = ["pn", "wt", "śr", "cz", "pt", "so", "nd"];
+      let html = weekdays.map((day) => `<div class="winner-weekday">${day}</div>`).join("");
+
+      for (let i = firstWeekday - 1; i >= 0; i -= 1) {
+        html += `<div class="winner-day">${previousMonthDays - i}</div>`;
+      }
+
+      for (let day = 1; day <= daysInMonth; day += 1) {
+        const key = `${year}-${month}-${day}`;
+        const winner = winnersMap.get(key);
+        const title = winner
+          ? `${winner.display_name}: ${formatLiters(Number(winner.total_ml || 0))}`
+          : "";
+
+        html += `<div class="winner-day ${winner ? "has-winner" : ""}" title="${escapeHtml(title)}">${day}</div>`;
+      }
+
+      const totalCells = firstWeekday + daysInMonth;
+      const tail = (7 - (totalCells % 7)) % 7;
+      for (let day = 1; day <= tail; day += 1) {
+        html += `<div class="winner-day">${day}</div>`;
+      }
+
+      elements.winnerCalendar.innerHTML = html;
+
+      const todayWinner = winnersMap.get(dateKey(now));
+      elements.winnerCaption.textContent = todayWinner
+        ? `Dzisiaj prowadzi: ${todayWinner.display_name} (${formatLiters(Number(todayWinner.total_ml || 0))}).`
+        : "Zwycięzca dnia pojawi się po zatwierdzeniu wyników.";
+    }
+
+    async function loadData() {
+      const today = new Date();
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      const nextMonthStart = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+      const from = monthStart.toISOString().slice(0, 10);
+      const to = nextMonthStart.toISOString().slice(0, 10);
+
+      const [todayData, monthData, alltimeData, winnersData] = await Promise.all([
+        fetchJson(`${ENDPOINTS.today}?select=*&order=total_ml.desc`),
+        fetchJson(`${ENDPOINTS.month}?select=*`),
+        fetchJson(`${ENDPOINTS.alltime}?select=*`),
+        fetchJson(`${ENDPOINTS.winners}?select=*&record_date=gte.${from}&record_date=lt.${to}&order=record_date.desc`)
+      ]);
+
+      todayScores = todayData;
+      monthBoard = monthData;
+      alltimeBoard = alltimeData;
+      winners = winnersData;
+
+      renderTodayScores();
+      renderLeaderboard();
+      renderWinnerCalendar();
+    }
+
+    function showMessage(message, type) {
+      elements.formMessage.textContent = message;
+      elements.formMessage.className = `form-message ${type}`;
+    }
+
+    function openDrawer() {
+      elements.waterDrawer.classList.add("is-open");
+      elements.waterDrawer.setAttribute("aria-hidden", "false");
+      document.body.classList.add("drawer-open");
+      setTimeout(() => elements.userKey.focus({ preventScroll: true }), 120);
+    }
+
+    function closeDrawer() {
+      elements.waterDrawer.classList.remove("is-open");
+      elements.waterDrawer.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("drawer-open");
+    }
+
+    function createSplashAnimation() {
+      const source = elements.submitButton;
+      const rect = source.getBoundingClientRect();
+
+      for (let index = 0; index < 18; index += 1) {
+        const drop = document.createElement("span");
+        const dx = (Math.random() * 130 - 65).toFixed(1);
+        const dy = (-42 - Math.random() * 120).toFixed(1);
+        const size = (6 + Math.random() * 10).toFixed(1);
+
+        drop.className = "splash-drop";
+        drop.style.setProperty("--x", `${rect.left + rect.width / 2}px`);
+        drop.style.setProperty("--y", `${rect.top + rect.height / 2}px`);
+        drop.style.setProperty("--dx", `${dx}px`);
+        drop.style.setProperty("--dy", `${dy}px`);
+        drop.style.setProperty("--size", `${size}px`);
+
+        document.body.appendChild(drop);
+        setTimeout(() => drop.remove(), 950);
+      }
+    }
+
+    async function submitWater(event) {
+      event.preventDefault();
+
+      const userKey = elements.userKey.value.trim();
+      const customAmount = Number(elements.customAmount.value || 0);
+      const amount = customAmount > 0 ? customAmount : selectedAmount;
+      const note = elements.note.value.trim();
+
+      if (!userKey) {
+        showMessage("Wpisz swój klucz.", "error");
+        return;
+      }
+
+      if (!Number.isFinite(amount) || amount < 50 || amount > 3000) {
+        showMessage("Ilość wody musi być w zakresie 50–3000 ml.", "error");
+        return;
+      }
+
+      elements.submitButton.disabled = true;
+      showMessage("Wysyłanie zgłoszenia...", "");
+
+      try {
+        const response = await fetch(ENDPOINTS.add, {
+          method: "POST",
+          headers: apiHeaders,
+          body: JSON.stringify({
+            p_user_key: userKey,
+            p_amount_ml: amount,
+            p_record_date: null,
+            p_note: note || null
+          })
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(text || `Supabase error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        lastAddedName = result.display_name || "";
+
+        saveKeyIfNeeded();
+        elements.note.value = "";
+        elements.customAmount.value = "";
+
+        createSplashAnimation();
+        showMessage("Zgłoszenie zapisane. Po potwierdzeniu woda doliczy się do wyniku.", "success");
+
+        await loadData();
+      } catch (error) {
+        console.error(error);
+        showMessage("Nie udało się zapisać zgłoszenia. Sprawdź klucz albo spróbuj później.", "error");
+      } finally {
+        elements.submitButton.disabled = false;
+      }
+    }
+
+    function revealPage() {
+      requestAnimationFrame(() => {
+        document.body.classList.remove("is-loading");
+        document.body.classList.add("is-ready");
+      });
+    }
+
+    elements.amountButtons.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-amount]");
+      if (!button) return;
+
+      selectedAmount = Number(button.dataset.amount);
+      elements.customAmount.value = "";
+
+      document.querySelectorAll(".amount-button").forEach((item) => item.classList.remove("is-selected"));
+      button.classList.add("is-selected");
+    });
+
+    elements.customAmount.addEventListener("input", () => {
+      document.querySelectorAll(".amount-button").forEach((item) => item.classList.remove("is-selected"));
+    });
+
+    document.querySelectorAll(".tab-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        boardMode = button.dataset.board;
+        document.querySelectorAll(".tab-button").forEach((item) => item.classList.remove("is-active"));
+        button.classList.add("is-active");
+        renderLeaderboard();
+      });
+    });
+
+    elements.waterForm.addEventListener("submit", submitWater);
+    elements.openDrawerButton.addEventListener("click", openDrawer);
+
+    document.addEventListener("click", (event) => {
+      if (event.target.matches("[data-close-drawer]")) {
+        closeDrawer();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeDrawer();
+      }
+    });
+
+    elements.refreshButton.addEventListener("click", async () => {
+      elements.refreshButton.disabled = true;
+      try {
+        await loadData();
+      } finally {
+        elements.refreshButton.disabled = false;
+      }
+    });
+
+    loadSavedKey();
+
+    Promise.all([
+      loadData(),
+      new Promise((resolve) => setTimeout(resolve, 1300))
+    ]).finally(revealPage);
+  </script>
+</body>
+</html>
