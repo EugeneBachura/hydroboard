@@ -132,13 +132,9 @@
       position: fixed;
       inset: 0;
       z-index: 40;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      background: rgba(7, 24, 33, 0.35);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      transition: opacity 420ms ease, visibility 420ms ease;
+      overflow: hidden;
+      background: #071821;
+      transition: opacity 520ms ease, visibility 520ms ease;
     }
 
     body.is-ready .loader {
@@ -147,28 +143,74 @@
       pointer-events: none;
     }
 
-    .loader-card {
-      display: inline-flex;
-      align-items: center;
-      gap: 13px;
-      padding: 14px 18px;
-      border: 1px solid var(--line-strong);
-      border-radius: 18px;
-      color: var(--ink);
-      background: rgba(13, 34, 45, 0.78);
-      box-shadow: 0 22px 60px var(--shadow);
+    .loader-water {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 0%;
+      background:
+        radial-gradient(circle at 22% 18%, rgba(235, 255, 255, .28), transparent 13rem),
+        radial-gradient(circle at 78% 42%, rgba(185, 232, 241, .24), transparent 16rem),
+        linear-gradient(180deg, rgba(185, 232, 241, .95), rgba(72, 160, 198, .96));
+      animation: loaderFill 1500ms cubic-bezier(.22, .8, .24, 1) forwards;
+    }
+
+    .loader-water::before,
+    .loader-water::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -54px;
+      width: 140vw;
+      height: 92px;
+      border-radius: 48%;
+      background: rgba(185, 232, 241, .86);
+      transform: translateX(-50%);
+      animation: loaderWave 2400ms ease-in-out infinite;
+    }
+
+    .loader-water::after {
+      top: -42px;
+      opacity: .46;
+      animation-duration: 3200ms;
+      animation-delay: -900ms;
+    }
+
+    .loader-mark {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: 2;
+      width: 76px;
+      height: 76px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(234,255,255,.24);
+      border-radius: 24px;
+      color: #061117;
+      background: linear-gradient(135deg, #b9e8f1, #c8eadf);
+      box-shadow: 0 18px 52px rgba(0,0,0,.22);
       font-family: "Space Grotesk", Inter, sans-serif;
-      font-weight: 700;
+      font-weight: 800;
+      transform: translate(-50%, -50%);
+      animation: loaderMark 1500ms ease forwards;
     }
 
-    .loader-drop {
-      display: inline-block;
-      animation: loaderDrop 920ms ease-in-out infinite;
+    @keyframes loaderFill {
+      0% { height: 0%; }
+      100% { height: 112%; }
     }
 
-    @keyframes loaderDrop {
-      0%, 100% { transform: translateY(-2px) scale(1); }
-      50% { transform: translateY(5px) scale(1.16); }
+    @keyframes loaderWave {
+      0%, 100% { transform: translateX(-50%) translateY(0) rotate(0deg); }
+      50% { transform: translateX(-50%) translateY(8px) rotate(1.8deg); }
+    }
+
+    @keyframes loaderMark {
+      0% { transform: translate(-50%, -50%) scale(.92); opacity: .65; }
+      55% { transform: translate(-50%, -54%) scale(1.03); opacity: 1; }
+      100% { transform: translate(-50%, -46%) scale(1); opacity: 1; }
     }
 
     .wrap {
@@ -981,7 +1023,6 @@
 
     @media (prefers-reduced-motion: reduce) {
       .page,
-      .loader-drop,
       .bubble,
       .water,
       .primary-button,
@@ -999,7 +1040,8 @@
   <div class="background" aria-hidden="true"><div class="water-blob" id="waterBlobA"></div><div class="water-blob is-small" id="waterBlobB"></div></div>
 
   <div class="loader" aria-live="polite" aria-label="Ładowanie strony">
-    <div class="loader-card"><span class="loader-drop">💧</span><span>Sprawdzamy poziom nawodnienia...</span></div>
+    <div class="loader-water"></div>
+    <div class="loader-mark">H₂O</div>
   </div>
 
   <main class="page">
