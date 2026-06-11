@@ -81,49 +81,30 @@
       mask-image: radial-gradient(circle at center, #000 0 38%, transparent 76%);
     }
 
-    .background::after {
-      content: "";
+    .water-blob {
       position: absolute;
-      width: 96vmin;
-      height: 96vmin;
-      left: 48%;
-      top: 48%;
-      border-radius: 36% 64% 58% 42%;
-      transform: translate(-50%, -50%);
+      width: min(58vmin, 560px);
+      height: min(58vmin, 560px);
+      left: var(--blob-x, 48%);
+      top: var(--blob-y, 48%);
+      border-radius: var(--blob-radius, 42% 58% 61% 39%);
+      transform: translate(-50%, -50%) rotate(var(--blob-rotate, 0deg)) scale(var(--blob-scale, 1));
       background:
         radial-gradient(circle at 29% 24%, rgba(232, 252, 255, .22), transparent 18%),
-        radial-gradient(circle at 72% 66%, rgba(126, 204, 221, .24), transparent 30%),
-        linear-gradient(135deg, rgba(126, 204, 221, .28), rgba(84, 151, 184, .10));
-      border: 1px solid rgba(175, 245, 255, 0.18);
+        radial-gradient(circle at 72% 66%, rgba(126, 204, 221, .20), transparent 30%),
+        linear-gradient(135deg, rgba(126, 204, 221, .22), rgba(84, 151, 184, .08));
+      border: 1px solid rgba(175, 245, 255, 0.16);
       box-shadow:
-        0 0 90px rgba(126, 204, 221, .16),
-        inset 0 0 80px rgba(232, 252, 255, .08);
+        0 0 70px rgba(126, 204, 221, .14),
+        inset 0 0 70px rgba(232, 252, 255, .07);
       filter: blur(.1px);
-      opacity: .95;
-      animation: waterBlob 7.5s ease-in-out infinite;
-    }
-
-    @keyframes waterBlob {
-      0% {
-        border-radius: 36% 64% 58% 42%;
-        transform: translate(-60%, -54%) rotate(0deg) scale(1);
-      }
-      20% {
-        border-radius: 66% 34% 42% 58%;
-        transform: translate(-34%, -62%) rotate(14deg) scale(1.10);
-      }
-      45% {
-        border-radius: 44% 56% 72% 28%;
-        transform: translate(-43%, -30%) rotate(-12deg) scale(.97);
-      }
-      70% {
-        border-radius: 58% 42% 35% 65%;
-        transform: translate(-67%, -40%) rotate(16deg) scale(1.08);
-      }
-      100% {
-        border-radius: 36% 64% 58% 42%;
-        transform: translate(-60%, -54%) rotate(0deg) scale(1);
-      }
+      opacity: .86;
+      transition:
+        left 7s cubic-bezier(.45, 0, .25, 1),
+        top 7s cubic-bezier(.45, 0, .25, 1),
+        border-radius 7s cubic-bezier(.45, 0, .25, 1),
+        transform 7s cubic-bezier(.45, 0, .25, 1);
+      will-change: left, top, border-radius, transform;
     }
 
     .page {
@@ -445,6 +426,14 @@
       font-size: 1.08rem;
       font-weight: 700;
       line-height: 1.22;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .person-emoji {
+      font-size: 1rem;
+      line-height: 1;
     }
 
     .person-total {
@@ -651,6 +640,9 @@
       margin: 0;
       color: var(--ink);
       font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .leader-total {
@@ -695,12 +687,12 @@
       font-weight: 900;
     }
 
-    .winner-day.has-winner::after {
-      content: "👑";
+    .winner-emoji {
       position: absolute;
       right: 3px;
       bottom: 2px;
-      font-size: .68rem;
+      font-size: .72rem;
+      line-height: 1;
     }
 
     .winner-caption {
@@ -997,7 +989,7 @@
 </head>
 
 <body class="is-loading">
-  <div class="background" aria-hidden="true"></div>
+  <div class="background" aria-hidden="true"><div class="water-blob" id="waterBlob"></div></div>
 
   <div class="loader" aria-live="polite" aria-label="Ładowanie strony">
     <div class="loader-card"><span class="loader-drop">💧</span><span>Sprawdzamy poziom nawodnienia...</span></div>
@@ -1231,7 +1223,7 @@
         return `
           <article class="person-card ${isSplashing ? "is-splashing" : ""}" data-name="${escapeHtml(person.display_name)}">
             <div class="person-top">
-              <p class="person-name">${escapeHtml(person.display_name)}</p>
+              <p class="person-name"><span class="person-emoji">${escapeHtml(person.emoji || "💧")}</span>${escapeHtml(person.display_name)}</p>
               <span class="person-total">${formatLiters(total)}</span>
             </div>
             <div class="tube" aria-label="${escapeHtml(person.display_name)}: ${total} ml">
@@ -1268,7 +1260,7 @@
       elements.leaderboard.innerHTML = data.slice(0, 8).map((row, index) => `
         <div class="leader-row">
           <span class="rank">${index + 1}</span>
-          <p class="leader-name">${escapeHtml(row.display_name)}</p>
+          <p class="leader-name"><span>${escapeHtml(row.emoji || "💧")}</span>${escapeHtml(row.display_name)}</p>
           <span class="leader-total">${formatLiters(Number(row.total_ml || 0))}</span>
         </div>
       `).join("");
@@ -1304,10 +1296,11 @@
         const key = `${year}-${month}-${day}`;
         const winner = winnersMap.get(key);
         const title = winner
-          ? `${winner.display_name}: ${formatLiters(Number(winner.total_ml || 0))}`
+          ? `${winner.emoji || "💧"} ${winner.display_name}: ${formatLiters(Number(winner.total_ml || 0))}`
           : "";
+        const emoji = winner ? `<span class="winner-emoji">${escapeHtml(winner.emoji || "💧")}</span>` : "";
 
-        html += `<div class="winner-day ${winner ? "has-winner" : ""}" title="${escapeHtml(title)}">${day}</div>`;
+        html += `<div class="winner-day ${winner ? "has-winner" : ""}" title="${escapeHtml(title)}">${day}${emoji}</div>`;
       }
 
       const totalCells = firstWeekday + daysInMonth;
@@ -1320,7 +1313,7 @@
 
       const todayWinner = winnersMap.get(dateKey(now));
       elements.winnerCaption.textContent = todayWinner
-        ? `Dzisiaj prowadzi: ${todayWinner.display_name} (${formatLiters(Number(todayWinner.total_ml || 0))}).`
+        ? `Dzisiaj prowadzi: ${todayWinner.emoji || "💧"} ${todayWinner.display_name} (${formatLiters(Number(todayWinner.total_ml || 0))}).`
         : "Zwycięzca dnia pojawi się po zatwierdzeniu wyników.";
     }
 
@@ -1541,6 +1534,30 @@
     setInterval(() => {
       safeLoadData();
     }, 45000);
+
+
+    function randomBlobValue(min, max, suffix = "") {
+      return `${(min + Math.random() * (max - min)).toFixed(2)}${suffix}`;
+    }
+
+    function randomBlobRadius() {
+      const values = Array.from({ length: 4 }, () => Math.floor(34 + Math.random() * 34));
+      return `${values[0]}% ${100 - values[0]}% ${values[1]}% ${100 - values[1]}% / ${values[2]}% ${values[3]}% ${100 - values[3]}% ${100 - values[2]}%`;
+    }
+
+    function moveWaterBlob() {
+      const blob = document.getElementById("waterBlob");
+      if (!blob) return;
+
+      blob.style.setProperty("--blob-x", randomBlobValue(34, 66, "%"));
+      blob.style.setProperty("--blob-y", randomBlobValue(30, 70, "%"));
+      blob.style.setProperty("--blob-rotate", randomBlobValue(-18, 18, "deg"));
+      blob.style.setProperty("--blob-scale", randomBlobValue(0.86, 1.08));
+      blob.style.setProperty("--blob-radius", randomBlobRadius());
+    }
+
+    moveWaterBlob();
+    setInterval(moveWaterBlob, 7200);
 
     loadSavedKey();
 
