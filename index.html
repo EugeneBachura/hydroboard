@@ -587,14 +587,14 @@
       background:
         linear-gradient(180deg, rgba(180, 235, 245, .18), rgba(118, 201, 226, .07));
       transform: translateX(-50%);
-      animation: wave 7.8s ease-in-out infinite;
+      animation: wave var(--wave-duration, 7.8s) ease-in-out var(--wave-delay, 0s) infinite;
     }
 
     .water::after {
       top: -12px;
       opacity: .14;
-      animation-duration: 10.5s;
-      animation-delay: -3.5s;
+      animation-duration: var(--wave-duration-2, 10.5s);
+      animation-delay: var(--wave-delay-2, -3.5s);
     }
 
     @keyframes wave {
@@ -1365,6 +1365,22 @@
       }).join("");
     }
 
+    function stringSeed(value) {
+      return String(value || "").split("").reduce((sum, character) => {
+        return sum + character.charCodeAt(0);
+      }, 0);
+    }
+
+    function waveStyleForPerson(name) {
+      const seed = stringSeed(name);
+      const durationOne = (7.0 + (seed % 17) / 10).toFixed(1);
+      const durationTwo = (9.4 + (seed % 23) / 10).toFixed(1);
+      const delayOne = -((seed % 29) / 10).toFixed(1);
+      const delayTwo = -((seed % 41) / 10).toFixed(1);
+
+      return `--wave-duration:${durationOne}s; --wave-duration-2:${durationTwo}s; --wave-delay:${delayOne}s; --wave-delay-2:${delayTwo}s;`;
+    }
+
     function renderTodayScores() {
       if (!todayScores.length) {
         elements.waterGrid.innerHTML = `
@@ -1389,7 +1405,7 @@
               <span class="person-total">${formatLiters(total)}</span>
             </div>
             <div class="tube" aria-label="${escapeHtml(person.display_name)}: ${total} ml">
-              <div class="water" style="--level:${level}%"></div>
+              <div class="water" style="--level:${level}%; ${waveStyleForPerson(person.display_name)}"></div>
               <div class="goal-line" style="--goal-level:${goalLevel}%"></div>
               <div class="tube-lines"></div>
               <div class="bubbles">${createBubbles()}</div>
