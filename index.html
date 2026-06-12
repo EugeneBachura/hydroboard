@@ -659,15 +659,17 @@
       pointer-events: none;
       background:
         linear-gradient(0deg,
-          transparent 0 calc(20% - 0.5px),
-          rgba(234,255,255,.07) calc(20% - 0.5px) calc(20% + 0.5px),
-          transparent calc(20% + 0.5px) calc(40% - 1px),
-          rgba(234,255,255,.13) calc(40% - 1px) calc(40% + 1px),
-          transparent calc(40% + 1px) calc(60% - 0.5px),
-          rgba(234,255,255,.07) calc(60% - 0.5px) calc(60% + 0.5px),
-          transparent calc(60% + 0.5px) calc(80% - 1px),
-          rgba(234,255,255,.13) calc(80% - 1px) calc(80% + 1px),
-          transparent calc(80% + 1px) calc(96% - 1px),
+          transparent 0 calc(16.666% - 0.5px),
+          rgba(234,255,255,.07) calc(16.666% - 0.5px) calc(16.666% + 0.5px),
+          transparent calc(16.666% + 0.5px) calc(33.333% - 1px),
+          rgba(234,255,255,.13) calc(33.333% - 1px) calc(33.333% + 1px),
+          transparent calc(33.333% + 1px) calc(50% - 0.5px),
+          rgba(234,255,255,.07) calc(50% - 0.5px) calc(50% + 0.5px),
+          transparent calc(50% + 0.5px) calc(66.666% - 1px),
+          rgba(234,255,255,.13) calc(66.666% - 1px) calc(66.666% + 1px),
+          transparent calc(66.666% + 1px) calc(83.333% - 0.5px),
+          rgba(234,255,255,.07) calc(83.333% - 0.5px) calc(83.333% + 0.5px),
+          transparent calc(83.333% + 0.5px) calc(96% - 1px),
           rgba(234,255,255,.13) calc(96% - 1px) calc(96% + 1px),
           transparent calc(96% + 1px) 100%
         );
@@ -684,13 +686,13 @@
 
     .tube-lines::before {
       content: "2 litry";
-      bottom: 80%;
+      bottom: 66.666%;
       transform: translateY(50%);
     }
 
     .tube-lines::after {
       content: "1 litr";
-      bottom: 40%;
+      bottom: 33.333%;
       transform: translateY(50%);
     }
 
@@ -701,6 +703,16 @@
       bottom: calc(var(--goal-level, 100%) - 2px);
       border-top: 1px dashed rgba(234,255,255,.36);
       z-index: 3;
+    }
+
+    .goal-line::after {
+      content: "3 litry";
+      position: absolute;
+      right: 10px;
+      top: 4px;
+      color: rgba(234,255,255,.56);
+      font-size: .72rem;
+      font-weight: 900;
     }
 
     .bubbles {
@@ -1417,7 +1429,7 @@
 
       elements.waterGrid.innerHTML = todayScores.map((person) => {
         const total = Number(person.total_ml || 0);
-        const level = Math.max(3, Math.min(100, (total / 2500) * 100));
+        const level = Math.max(3, Math.min(100, (total / 3000) * 100));
         const goalLevel = 100;
         const isSplashing = lastAddedName && lastAddedName === person.display_name;
 
