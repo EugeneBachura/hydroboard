@@ -849,7 +849,7 @@
 
     .winner-tooltip {
       position: fixed;
-      z-index: 90;
+      z-index: 9999;
       width: min(280px, calc(100vw - 28px));
       padding: 12px 13px;
       border: 1px solid var(--line-strong);
@@ -863,6 +863,7 @@
       -webkit-backdrop-filter: blur(18px) saturate(1.10);
       pointer-events: none;
       text-align: left;
+      transform: translateZ(0);
     }
 
     .winner-tooltip[hidden] {
@@ -1229,7 +1230,6 @@
           <section class="panel calendar-panel" aria-label="Kalendarz zwycięzców">
             <h2 class="section-title">Kalendarz zwycięzców</h2>
             <div class="winner-calendar" id="winnerCalendar"></div>
-            <div class="winner-tooltip" id="winnerTooltip" hidden></div>
             <p class="winner-caption" id="winnerCaption">Zwycięzca dnia pojawi się po zatwierdzeniu wyników.</p>
           </section>
         </aside>
@@ -1286,6 +1286,8 @@
       </form>
     </section>
   </aside>
+
+  <div class="winner-tooltip" id="winnerTooltip" hidden></div>
 
   <script>
     const SUPABASE_URL = "https://vgtbmaftvvbludobmpsk.supabase.co";
