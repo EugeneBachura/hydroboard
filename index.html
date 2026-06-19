@@ -1051,6 +1051,13 @@
     .form-message.success { color: var(--success); }
     .form-message.error { color: var(--danger); }
 
+    .form-hint {
+      margin: -2px 0 0;
+      color: rgba(234,255,255,.48);
+      font-size: .76rem;
+      line-height: 1.35;
+    }
+
     .splash-drop {
       position: fixed;
       left: var(--x);
@@ -1230,6 +1237,7 @@
         <div class="field">
           <label for="customAmount">Inna ilość, ml</label>
           <input id="customAmount" name="custom_amount" type="number" min="50" max="3000" step="10" placeholder="opcjonalnie" />
+          <p class="form-hint">Do 03:00 w nocy wpis liczy się jeszcze do poprzedniego dnia.</p>
         </div>
 
         <div class="field is-hidden-field" aria-hidden="true">
@@ -1457,16 +1465,40 @@
       return new Date(year, month - 1, day);
     }
 
-    function warsawDateString() {
+    function warsawNowParts() {
       const parts = new Intl.DateTimeFormat("en-CA", {
         timeZone: "Europe/Warsaw",
         year: "numeric",
         month: "2-digit",
-        day: "2-digit"
+        day: "2-digit",
+        hour: "2-digit",
+        hour12: false
       }).formatToParts(new Date());
 
       const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-      return `${values.year}-${values.month}-${values.day}`;
+      const hour = Number(values.hour === "24" ? "0" : values.hour);
+
+      return {
+        year: Number(values.year),
+        month: Number(values.month),
+        day: Number(values.day),
+        hour
+      };
+    }
+
+    function challengeDateObject() {
+      const parts = warsawNowParts();
+      const date = new Date(parts.year, parts.month - 1, parts.day);
+
+      if (parts.hour < 3) {
+        date.setDate(date.getDate() - 1);
+      }
+
+      return date;
+    }
+
+    function challengeDateString() {
+      return localDateString(challengeDateObject());
     }
 
 
@@ -1526,7 +1558,7 @@
 
     function renderWinnerCalendar() {
       hideWinnerTooltip();
-      const now = new Date();
+      const now = challengeDateObject();
       const year = now.getFullYear();
       const month = now.getMonth();
       const first = new Date(year, month, 1);
@@ -1576,7 +1608,7 @@
     }
 
     async function loadData() {
-      const today = new Date();
+      const today = challengeDateObject();
       const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
       const nextMonthStart = new Date(today.getFullYear(), today.getMonth() + 1, 1);
       const from = localDateString(monthStart);
@@ -1668,7 +1700,7 @@
           body: JSON.stringify({
             p_user_key: userKey,
             p_amount_ml: amount,
-            p_record_date: warsawDateString(),
+            p_record_date: challengeDateString(),
             p_note: note || null
           })
         });
