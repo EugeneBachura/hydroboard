@@ -325,6 +325,35 @@
       justify-content: flex-end;
     }
 
+    .pause-banner {
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 211, 106, .28);
+      border-radius: 20px;
+      background:
+        linear-gradient(135deg, rgba(255, 211, 106, .13), rgba(234,255,255,.045)),
+        rgba(9, 28, 38, .66);
+      box-shadow: 0 16px 44px rgba(0,0,0,.18);
+    }
+
+    .pause-banner[hidden] {
+      display: none !important;
+    }
+
+    .pause-title {
+      margin: 0;
+      color: #ffe3a0;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .pause-text {
+      margin: 4px 0 0;
+      color: rgba(234,255,255,.72);
+      font-size: .92rem;
+      line-height: 1.45;
+    }
+
     .hero {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -1058,6 +1087,14 @@
       line-height: 1.35;
     }
 
+    .water-form.is-paused input,
+    .water-form.is-paused textarea,
+    .water-form.is-paused .amount-button {
+      opacity: .58;
+      cursor: not-allowed;
+    }
+
+
     .splash-drop {
       position: fixed;
       left: var(--x);
@@ -1174,6 +1211,13 @@
         </div>
       </section>
 
+      <section class="pause-banner" id="pauseBanner" hidden>
+        <div>
+          <p class="pause-title">Wyzwanie jest chwilowo wstrzymane</p>
+          <p class="pause-text" id="pauseText">Dolewanie wody jest teraz wyłączone.</p>
+        </div>
+      </section>
+
       <section class="main-grid">
         <section class="panel water-panel" aria-label="Dzisiejszy poziom wody">
           <div class="section-title-row">
@@ -1267,7 +1311,8 @@
       month: `${SUPABASE_URL}/rest/v1/hydration_month_leaderboard`,
       alltime: `${SUPABASE_URL}/rest/v1/hydration_alltime_leaderboard`,
       winners: `${SUPABASE_URL}/rest/v1/hydration_daily_winners`,
-      add: `${SUPABASE_URL}/rest/v1/rpc/add_water_by_key`
+      add: `${SUPABASE_URL}/rest/v1/rpc/add_water_by_key`,
+      settings: `${SUPABASE_URL}/rest/v1/hydration_settings`
     };
 
     const apiHeaders = {
@@ -1289,6 +1334,8 @@
       winnerCalendar: document.getElementById("winnerCalendar"),
       winnerTooltip: document.getElementById("winnerTooltip"),
       winnerCaption: document.getElementById("winnerCaption"),
+      pauseBanner: document.getElementById("pauseBanner"),
+      pauseText: document.getElementById("pauseText"),
       openDrawerButton: document.getElementById("openDrawerButton"),
       waterDrawer: document.getElementById("waterDrawer")
     };
@@ -1300,6 +1347,11 @@
     let alltimeBoard = [];
     let winners = [];
     let lastAddedName = "";
+    let challengeSettings = {
+      is_paused: false,
+      pause_date: null,
+      pause_message: "Dolewanie wody jest teraz wyłączone."
+    };
 
     function setCookie(name, value, days) {
       const maxAge = days * 24 * 60 * 60;
@@ -1486,7 +1538,7 @@
       };
     }
 
-    function challengeDateObject() {
+    function currentChallengeDateObject() {
       const parts = warsawNowParts();
       const date = new Date(parts.year, parts.month - 1, parts.day);
 
@@ -1495,6 +1547,14 @@
       }
 
       return date;
+    }
+
+    function challengeDateObject() {
+      if (challengeSettings.is_paused && challengeSettings.pause_date) {
+        return dateFromDbDate(challengeSettings.pause_date);
+      }
+
+      return currentChallengeDateObject();
     }
 
     function challengeDateString() {
@@ -1607,7 +1667,53 @@
         : "Zwycięzca dnia pojawi się po zatwierdzeniu wyników.";
     }
 
+    async function loadSettings() {
+      try {
+        const settings = await fetchJson(`${ENDPOINTS.settings}?select=*&id=eq.main&limit=1`);
+        const item = Array.isArray(settings) ? settings[0] : null;
+
+        challengeSettings = {
+          is_paused: Boolean(item?.is_paused),
+          pause_date: item?.pause_date || null,
+          pause_message: item?.pause_message || "Dolewanie wody jest teraz wyłączone."
+        };
+      } catch (error) {
+        challengeSettings = {
+          is_paused: false,
+          pause_date: null,
+          pause_message: "Dolewanie wody jest teraz wyłączone."
+        };
+      }
+
+      applyPauseState();
+    }
+
+    function applyPauseState() {
+      const paused = challengeSettings.is_paused;
+      const message = challengeSettings.pause_message || "Dolewanie wody jest teraz wyłączone.";
+
+      elements.pauseBanner.hidden = !paused;
+      elements.pauseText.textContent = message;
+      elements.waterForm.classList.toggle("is-paused", paused);
+
+      elements.userKey.disabled = paused;
+      elements.customAmount.disabled = paused;
+      elements.note.disabled = paused;
+      elements.submitButton.disabled = paused;
+      elements.submitButton.textContent = paused ? "Wstrzymane" : "Dolej do kolby";
+      elements.amountButtons.querySelectorAll("button").forEach((button) => {
+        button.disabled = paused;
+      });
+
+      if (paused) {
+        showMessage(message, "error");
+      } else {
+        showMessage("", "");
+      }
+    }
+
     async function loadData() {
+      await loadSettings();
       const today = challengeDateObject();
       const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
       const nextMonthStart = new Date(today.getFullYear(), today.getMonth() + 1, 1);
@@ -1641,7 +1747,11 @@
       elements.waterDrawer.classList.add("is-open");
       elements.waterDrawer.setAttribute("aria-hidden", "false");
       document.body.classList.add("drawer-open");
-      setTimeout(() => elements.userKey.focus({ preventScroll: true }), 120);
+      if (challengeSettings.is_paused) {
+        showMessage(challengeSettings.pause_message || "Dolewanie wody jest teraz wyłączone.", "error");
+      } else {
+        setTimeout(() => elements.userKey.focus({ preventScroll: true }), 120);
+      }
     }
 
     function closeDrawer() {
@@ -1674,6 +1784,11 @@
 
     async function submitWater(event) {
       event.preventDefault();
+
+      if (challengeSettings.is_paused) {
+        showMessage(challengeSettings.pause_message || "Dolewanie wody jest teraz wyłączone.", "error");
+        return;
+      }
 
       const userKey = elements.userKey.value.trim();
       const customAmount = Number(elements.customAmount.value || 0);
